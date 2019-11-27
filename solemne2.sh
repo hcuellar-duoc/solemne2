@@ -394,11 +394,11 @@ function modulo_usuarios(){
 
 	echo "----------------------------------------------"
 	echo ""
-	echo " [ Crear usuarios y grupos ]"
+	echo " [ Creación usuarios y grupos ]"
 	echo ""
 	echo "----------------------------------------------"
 	echo ""
-	echo " Ingresar nombre de usuario a crear."
+	echo " Ingresar nombre de usuario a crear:"
 	echo ""
 
 	read -r usuario
@@ -419,7 +419,7 @@ function modulo_usuarios(){
 		clear
 		
 		echo ""
-		echo "Se procedió a crear el $usuario"
+		echo "Se procedió a crear el usuario $usuario"
 		echo ""
 		
 		read -rsp "Presione cualquier tecla para procesar" -n 1 key		
@@ -449,12 +449,11 @@ function modulo_dir(){
 
 		modulo_dir_check
 
-		else
-		echo modulo_grupos
-
 	fi
 
-
+	if [ "$confirmar" = n ];
+		then modulo_grupos
+	fi
 }
 
 #########################################################
@@ -498,43 +497,88 @@ function modulo_dir_check(){
 }
 
 #########################################################
-#			*** Función Usuarios Grupos ***
+#			*** Función Grupos Parte 1 ***
 #########################################################
 
 function modulo_grupos(){
 
 	clear
 
+	echo "----------------------------------------------"
 	echo ""
-	echo " Ingrese nombre de usuario."
+	echo " [ Creación grupos ] Atención:"
+	echo ""
+	echo " En esta parte del modulo, usted ingresará un"
+	echo " usuario, y primero se verificará si existe,"
+	echo " de no existir se derivará al modulo de creación"
+	echo " de usuarios, por el contrario si ya existe el"
+	echo " usuario, podrá continuar para poder agregarlo"
+	echo " a un grupo ya existente. Nota: también se"
+	echo " verificará más adelante si los grupos existen."
+	echo " como requisito para llegar al final del script."
+	echo " y derivará al modulo de creación de grupos de"
+	echo " ser necesario."
+	echo "----------------------------------------------"
+	echo ""
+	echo " Ingresar nombre de usuario para agregar a un grupo:"
 	echo ""
 
 	read -r usuario
 
+	if id -u "$usuario" >/dev/null 2>&1;
+		then clear
+		
+		echo ""
+		echo "El nombre $usuario ya existe y se agregará a la configuración."
+		echo ""
+		read -rsp "Presione cualquier tecla para proceder al siguiente paso." -n 1 key	
+		echo ""
+		
+		modulo_grupos_p2
+		
+		else clear
+		
+		echo ""
+		echo "El usuario $usuario no existe, se derivará al modulo creación de usuarios."
+		echo ""
+		
+		read -rsp "Presione cualquier tecla para continuar." -n 1 key		
+		
+		modulo_usuarios
+
+	fi
+	
+}
+	
+#########################################################
+#			*** Función Grupos Parte 2 ***
+#########################################################
+
+function modulo_grupos_p2(){
+
 	clear
 
 	echo ""
-	echo " Ingrese nombre de grupo secundario."
+	echo " Ingrese nombre de grupo secundario al cual desea afiliar al usuario."
 	echo ""
 
 	read -r secundario
 	
-	grupo="$primario"
- 
-	/bin/id -g $grupo 2>/dev/null
-
-	if [ $? -eq 0 ];
+	if grep -q "$secundario" /etc/group
 		then clear
 
 		echo ""
-		echo "El grupo $secundario existe y se agregará a la configuración"
+		echo "El grupo $secundario existe y se agregará a la configuración."
 		echo ""
 		
 		read -rsp "Presione cualquier tecla para continuar" -n 1 key
+		
+		modulo_grupos_p3
 
-		else
+		else clear
+
 		echo ""
-		echo "El grupo $secundario no existe, se derivará a la creación"
+		echo "El grupo $secundario no existe, se derivará al modulo creación grupo secundario."
 		echo ""
 
 		read -rsp "Presione cualquier tecla para continuar" -n 1 key
@@ -542,33 +586,39 @@ function modulo_grupos(){
 		modulo_gsecundario
 
 	fi
+	
+}
+	
 
 #########################################################
+#			*** Función Grupos Parte 3 ***
+#########################################################
+
+function modulo_grupos_p3(){
 
 	clear
 
 	echo ""
-	echo " Ingrese nombre de grupo primario."
+	echo " Ingrese nombre de grupo primario al cual desea afiliar al usuario."
 	echo ""
 
 	read -r primario
 	
-	grupo="$primario"
-
-	/bin/egrep  -i "^${grupo}:" /etc/group
-
-	if [ $? -eq 0 ];
+	if grep -q "$primario" /etc/group
 		then clear
 
 		echo ""
-		echo "El grupo $primario ya existe y se agregará a la configuración"
+		echo "El grupo $primario existe y se agregará a la configuración."
 		echo ""
 		
 		read -rsp "Presione cualquier tecla para continuar" -n 1 key
+		
+		modulo_grupos_p4
 
-		else
+		else clear
+
 		echo ""
-		echo "El grupo $primario no existe, se derivará a la creación"
+		echo "El grupo $primario no existe, se derivará al modulo creación grupos primario."
 		echo ""
 
 		read -rsp "Presione cualquier tecla para continuar" -n 1 key
@@ -576,8 +626,14 @@ function modulo_grupos(){
 		modulo_gprimario
 
 	fi
+	
+}
 
 #########################################################
+#			*** Función Grupos Parte 4 ***
+#########################################################
+
+function modulo_grupos_p4(){
 
 	clear
 
@@ -594,9 +650,6 @@ function modulo_grupos(){
 
 	if [ "$confirmar" = Y ];
 		then clear
-
-		groupadd "$primario"
-		groupadd "$secundario"
 
 		useradd "$usuario" -G "$primario" -g "$secundario"
 		
@@ -629,19 +682,55 @@ function modulo_gprimario(){
 
 	clear
 
+	echo "----------------------------------------------"
 	echo ""
-	echo " ¿Desea crear el grupo $primario? [Y/n]"
+	echo " Modulo creación Grupo Primario"
+	echo ""
+	echo "----------------------------------------------"
+	echo ""
+	echo " Ingrese nuevamente el nombre del grupo primario:"
 	echo ""
 
-	if [ "$confirmar" = Y ];
-		then groupadd "$primario"
+	read -r primario
+	
+	if grep -q "$primario" /etc/group
+		then clear
+
+		echo ""
+		echo "El grupo $primario ya existe, favor inténtelo de nuevo."
+		echo ""
 		
-		modulo_grupos
+		read -rsp "Presione cualquier tecla para continuar" -n 1 key
+		
+		modulo_gprimario
+		
+		else
 
-	fi
+		echo ""
+		echo " El nombre del grupo está disponible ¿Desea crear el grupo $primario? [Y/n]"
+		echo ""
 
-	if [ "$confirmar" = n ];
-		then modulo_grupos
+		read -r confirmar
+
+		if [ "$confirmar" = Y ];
+			then groupadd "$primario"
+		
+
+			echo ""
+			echo " El grupo $primario ha sido creado."
+			echo " Se derivará a la sección de agregar usuario a grupo."
+			echo ""
+		
+			read -rsp "Presione cualquier tecla para continuar" -n 1 key
+
+			modulo_grupos
+
+		fi
+
+		if [ "$confirmar" = n ];
+			then modulo_grupos
+
+		fi
 
 	fi
 
@@ -655,20 +744,54 @@ function modulo_gsecundario(){
 
 	clear
 
+	echo "----------------------------------------------"
 	echo ""
-	echo " ¿Desea crear el grupo $secundario? [Y/n]"
+	echo " Modulo creación Grupo Secundario"
+	echo ""
+	echo "----------------------------------------------"
+	echo ""
+	echo " Ingrese nuevamente el nombre del grupo secundario:"
 	echo ""
 
-	if [ "$confirmar" = Y ];
-		then groupadd "$secundario"
+	read -r secundario
+	
+	if grep -q "$secundario" /etc/group
+		then clear
 
-		modulo_grupos
+		echo ""
+		echo "El grupo $secundario ya existe, favor inténtelo de nuevo."
+		echo ""
+		
+		read -rsp "Presione cualquier tecla para continuar" -n 1 key
+		
+		modulo_gsecundario
+		
+		else
 
-	fi
+		echo ""
+		echo " El nombre del grupo está disponible ¿Desea crear el grupo $secundario? [Y/n]"
+		echo ""
 
-	if [ "$confirmar" = n ];
+		read -r confirmar
 
-		then modulo_grupos
+		if [ "$confirmar" = Y ];
+			then groupadd "$secundario"
+		
+			echo ""
+			echo " El grupo $secundario ha sido creado."
+			echo " Se derivará a la sección de agregar usuario a grupo."
+			echo ""
+			
+			read -rsp "Presione cualquier tecla para continuar" -n 1 key
+		
+			modulo_grupos
+
+		fi
+
+		if [ "$confirmar" = n ];
+			then modulo_grupos
+
+		fi
 
 	fi
 
