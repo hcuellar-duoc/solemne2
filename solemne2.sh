@@ -518,6 +518,32 @@ function modulo_grupos(){
 	echo ""
 
 	read -r secundario
+	
+	grupo="$primario"
+ 
+	/bin/id -g $grupo 2>/dev/null
+
+	if [ $? -eq 0 ];
+		then clear
+
+		echo ""
+		echo "El grupo $secundario existe y se agregará a la configuración"
+		echo ""
+		
+		read -rsp "Presione cualquier tecla para continuar" -n 1 key
+
+		else
+		echo ""
+		echo "El grupo $secundario no existe, se derivará a la creación"
+		echo ""
+
+		read -rsp "Presione cualquier tecla para continuar" -n 1 key
+		
+		modulo_gsecundario
+
+	fi
+
+#########################################################
 
 	clear
 
@@ -526,6 +552,32 @@ function modulo_grupos(){
 	echo ""
 
 	read -r primario
+	
+	grupo="$primario"
+
+	/bin/egrep  -i "^${grupo}:" /etc/group
+
+	if [ $? -eq 0 ];
+		then clear
+
+		echo ""
+		echo "El grupo $primario ya existe y se agregará a la configuración"
+		echo ""
+		
+		read -rsp "Presione cualquier tecla para continuar" -n 1 key
+
+		else
+		echo ""
+		echo "El grupo $primario no existe, se derivará a la creación"
+		echo ""
+
+		read -rsp "Presione cualquier tecla para continuar" -n 1 key
+		
+		modulo_gprimario
+
+	fi
+
+#########################################################
 
 	clear
 
@@ -547,10 +599,14 @@ function modulo_grupos(){
 		groupadd "$secundario"
 
 		useradd "$usuario" -G "$primario" -g "$secundario"
+		
+		clear
 
 		echo ""
 		echo " Se completó la operacion"
 		echo ""
+		
+		read -rsp "Presione cualquier tecla para continuar" -n 1 key
 
 		modulo_principal
 
@@ -561,6 +617,59 @@ function modulo_grupos(){
 	
 	modulo_parte3
 	
+	fi
+
+}
+
+#########################################################
+#			*** Función Grupo Primario ***
+#########################################################
+
+function modulo_gprimario(){
+
+	clear
+
+	echo ""
+	echo " ¿Desea crear el grupo $primario? [Y/n]"
+	echo ""
+
+	if [ "$confirmar" = Y ];
+		then groupadd "$primario"
+		
+		modulo_grupos
+
+	fi
+
+	if [ "$confirmar" = n ];
+		then modulo_grupos
+
+	fi
+
+}
+
+#########################################################
+#			*** Función Grupo Secundario ***
+#########################################################
+
+function modulo_gsecundario(){
+
+	clear
+
+	echo ""
+	echo " ¿Desea crear el grupo $secundario? [Y/n]"
+	echo ""
+
+	if [ "$confirmar" = Y ];
+		then groupadd "$secundario"
+
+		modulo_grupos
+
+	fi
+
+	if [ "$confirmar" = n ];
+
+		then modulo_grupos
+
 	fi
 
 }
