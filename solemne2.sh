@@ -151,7 +151,8 @@ function modulo_parte2(){
 	read -r ejecutar
 
 	if [ "$ejecutar" = Y ];
-		then modulo_reporte_script
+		then clear
+		modulo_reporte_script
 	fi
 
 	if [ "$ejecutar" = n ];
@@ -312,21 +313,69 @@ function modulo_procesos_terminar(){
 }
 
 #########################################################
-#			*** Función Reporte Script ***
+#			*** Funciones Reporte Script ***
 #########################################################
+
+reporte=""
+
+function linea(){
+
+   reporte="$reporte$1\n"
+
+}
+
+function cfg_server(){
+
+    nombre=$(cat /etc/hostname)
+	linea "Nombre Servidor: $nombre"
+
+}
+
+function cfg_selinux(){
+
+	linea ""
+    linea "----------------------------------------------"
+    linea " [ Configuración SElinux ]"
+    linea "----------------------------------------------"
+    while read -r l; do linea "$l"; done < /etc/selinux/config
+    nivel=$(runlevel)
+    linea "Nivel de ejecución: $nivel"
+	linea ""
+
+}
+
+function cfg_ssh() {
+
+    linea "----------------------------------------------"
+    linea " [ Configuración SSH ] "
+    linea "----------------------------------------------"
+	linea ""
+    root_habilitado=$(cat /etc/ssh/sshd_config | grep -i ^PermitRootLogin | cut -f2 -d" ")
+    linea "Habilitado usuario root: ${root_habilitado:-no}"
+    protocolo=$(cat /etc/ssh/sshd_config | grep Protocol | cut -f2 -d" ")
+    linea "Protocolo utilizado: ${protocolo:-2,1}"
+    tiempo_gracia=$(cat /etc/ssh/sshd_config | grep LoginGraceTime | cut -f5 -d" ")
+    linea "Tiempo de gracia: ${tiempo_gracia:-5m}"
+
+}
 
 function modulo_reporte_script(){
 
-#	echo "[ Reporte Script ]" >> reportescript.log
-#	echo "" >> reportescript.log
-#	echo "Servidor:" >> reportescript.log
-#	echo "Nombre del servidor:"  >> reportescript.log
-#	echo "Configuracion de SElinux:" >> reportescript.log
-#	echo "Nivel de ejecucion por defecto:" >> reportescript.log
-#	echo "Habilitado usuario root: ${root_habilitado:-no}" >> reportescript.log
-#	echo "Protocolo utilizado: ${protocolo:-2,1}" >> reportescript.log
-#	echo "Tiempo de gracias: ${tiempo_gracia:-2m}" >> reportescript.log
+	clear
 
+	echo "----------------------------------------------"
+	echo " Información de reportescript.log"
+	echo "----------------------------------------------"
+	echo ""
+
+	cfg_server
+	cfg_selinux
+	cfg_ssh
+
+	echo -e "$reporte" > reportescripts.log
+
+	cat reportescripts.log
+	
 	echo ""
 	read -rsp "El proceso se realizó, presione cualquier tecla para continuar..." -n 1 key
 	echo ""
@@ -426,6 +475,8 @@ function modulo_dir_check(){
 		echo ""
 		echo " ~$directorio ya existe." 
 		echo ""
+		
+		modulo_dir_check
 
 		else
 		echo mkdir "~$directorio"
@@ -438,7 +489,7 @@ function modulo_dir_check(){
 		sudo tree /home/"$directorio"
 		echo ""
 		
-		read -rsp "Presione cualquier tecla para continuar." -n 1 key
+		read -rsp "Presione cualquier tecla para continuar" -n 1 key	
 
 		modulo_grupos
 
