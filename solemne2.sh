@@ -403,7 +403,7 @@ function modulo_usuarios(){
 
 	read -r usuario
 
-	if id -u "$usuario" >/dev/null 2>&1;
+	if grep -q "$usuario" /etc/passwd
 		then clear
 		
 		echo ""
@@ -525,14 +525,14 @@ function modulo_grupos(){
 
 	read -r usuario
 
-	if id -u "$usuario" >/dev/null 2>&1;
+	if grep -q "$usuario" /etc/passwd
 		then clear
 		
 		echo ""
 		echo "El nombre $usuario ya existe y se agregará a la configuración."
 		echo ""
+
 		read -rsp "Presione cualquier tecla para proceder al siguiente paso." -n 1 key	
-		echo ""
 		
 		modulo_grupos_p2
 		
