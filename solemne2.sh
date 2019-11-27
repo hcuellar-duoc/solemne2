@@ -320,13 +320,13 @@ reporte=""
 
 function linea(){
 
-   reporte="$reporte$1\n"
+	reporte="$reporte$1\n"
 
 }
 
 function cfg_server(){
 
-    nombre=$(cat /etc/hostname)
+	nombre=$(cat /etc/hostname)
 	linea "Nombre Servidor: $nombre"
 
 }
@@ -334,28 +334,28 @@ function cfg_server(){
 function cfg_selinux(){
 
 	linea ""
-    linea "----------------------------------------------"
-    linea " [ Configuración SElinux ]"
-    linea "----------------------------------------------"
-    while read -r l; do linea "$l"; done < /etc/selinux/config
-    nivel=$(runlevel)
-    linea "Nivel de ejecución: $nivel"
+	linea "----------------------------------------------"
+	linea " [ Configuración SElinux ]"
+	linea "----------------------------------------------"
+	while read -r l; do linea "$l"; done < /etc/selinux/config
+	nivel=$(runlevel)
+	linea "Nivel de ejecución: $nivel"
 	linea ""
 
 }
 
 function cfg_ssh() {
 
-    linea "----------------------------------------------"
-    linea " [ Configuración SSH ] "
-    linea "----------------------------------------------"
+	linea "----------------------------------------------"
+	linea " [ Configuración SSH ] "
+	linea "----------------------------------------------"
 	linea ""
-    root_habilitado=$(cat /etc/ssh/sshd_config | grep -i ^PermitRootLogin | cut -f2 -d" ")
-    linea "Habilitado usuario root: ${root_habilitado:-no}"
-    protocolo=$(cat /etc/ssh/sshd_config | grep Protocol | cut -f2 -d" ")
-    linea "Protocolo utilizado: ${protocolo:-2,1}"
-    tiempo_gracia=$(cat /etc/ssh/sshd_config | grep LoginGraceTime | cut -f5 -d" ")
-    linea "Tiempo de gracia: ${tiempo_gracia:-5m}"
+	root_habilitado=$(cat /etc/ssh/sshd_config | grep -i ^PermitRootLogin | cut -f2 -d" ")
+	linea "Habilitado usuario root: ${root_habilitado:-no}"
+	protocolo=$(cat /etc/ssh/sshd_config | grep Protocol | cut -f2 -d" ")
+	linea "Protocolo utilizado: ${protocolo:-2,1}"
+	tiempo_gracia=$(cat /etc/ssh/sshd_config | grep LoginGraceTime | cut -f5 -d" ")
+	linea "Tiempo de gracia: ${tiempo_gracia:-5m}"
 
 }
 
